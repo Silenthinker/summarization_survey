@@ -20,7 +20,11 @@ TODO
 
 摘要式文本摘要
 ---
-摘要式文本摘要以一种更接近于人的方式生成摘要，这就要求摘要式模型有更强的**表征**、**理解**、**生成**文本的能力。传统方法很难实现这些能力
+摘要式文本摘要以一种更接近于人的方式生成摘要，这就要求摘要式模型有更强的**表征**、**理解**、**生成**文本的能力。传统方法很难实现这些能力，而近几年来快速发展的深度神经网络因其强大的表征（representation）能力，提供了更多的可能性，在图像分类、机器翻译等领域不断推进机器智能的极限。借助深度神经网络，摘要式自动文本摘要也有了瞩目的发展，不少摘要式神经网络模型在DUC-2004测试集上已经超越了最好的抽取式模型\[4\]。这部分文章主要介绍摘要式神经网络模型的基本结构、主要模型、及最新成果。
+
+#### 基本模型结构
+
+![Image](/img/seq2seq.png?raw=true)
 
 Seq2Seq模型
 
@@ -81,3 +85,5 @@ Reference
 \[2\] [A Survey on Automatic Text Summarization](http://www.cs.cmu.edu/~nasmith/LS2/das-martins.07.pdf)
 
 \[3\] [Introduction to the Special Issue on Summarization](http://www.mitpressjournals.org/doi/abs/10.1162/089120102762671927)
+
+\[4\] [A Deep Reinforced Model for Abstractive Summarization](https://arxiv.org/abs/1705.04304)
