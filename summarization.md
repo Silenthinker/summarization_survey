@@ -20,7 +20,7 @@ TODO
 
 摘要式文本摘要
 ---
-摘要式文本摘要以一种更接近于人的方式生成摘要，这就要求摘要式模型有更强的**表征**、**理解**、**生成**文本的能力。传统方法很难实现这些能力，而近几年来快速发展的深度神经网络因其强大的表征（representation）能力，提供了更多的可能性，在图像分类、机器翻译等领域不断推进机器智能的极限。借助深度神经网络，摘要式自动文本摘要也有了令人瞩目的发展，不少摘要式神经网络模型（neural-network-based abstractive summarization model）在DUC-2004测试集上已经超越了最好的抽取式模型\[4\]。这部分文章主要介绍摘要式神经网络模型的基本结构、主要模型、及最新成果。
+摘要式文本摘要以一种更接近于人的方式生成摘要，这就要求摘要式模型有更强的**表征**、**理解**、**生成**文本的能力。传统方法很难实现这些能力，而近几年来快速发展的深度神经网络因其强大的表征（representation）能力，提供了更多的可能性，在图像分类、机器翻译等领域不断推进机器智能的极限。借助深度神经网络，摘要式自动文本摘要也有了令人瞩目的发展，不少摘要式神经网络模型（neural-network-based abstractive summarization model）在DUC-2004测试集上已经超越了最好的抽取式模型\[4\]。这部分文章主要介绍摘要式神经网络模型的基本结构、及最新成果。
 
 #### 基本模型结构
 
@@ -36,23 +36,31 @@ RNN被称为递归神经网络，是因为它的输出不仅依赖于输入，�
 
 ![Image](/img/rnn.png?raw=true)
 
-如上图所示，t时刻的输出h不仅依赖t时刻的输入x，还依赖t-1时刻的输出，而t-1的输出又依赖t-1的输入和t-2输出，如此递归，时序上的依赖使RNN在理论上能在某时刻输出时，考虑到所有过去时刻的输入信息。因此特别适合时序数据，如文本、金融数据等。
+如上图所示，t时刻的输出h不仅依赖t时刻的输入x，还依赖t-1时刻的输出，而t-1的输出又依赖t-1的输入和t-2输出，如此递归，时序上的依赖使RNN在理论上能在某时刻输出时，考虑到所有过去时刻的输入信息。因此特别适合时序数据，如文本、语音、金融数据等。因此，基于RNN实现Seq2Seq架构处理文本任务是一个自然的想法。
 
 典型的基于RNN的Seq2Seq架构如下图所示：
 
+![Image](/img/seq2seq_rnn.png?raw=true)
+
+图中展示的是一个用于自动回复邮件的模型，它的编码器和解码器分别由四层RNN的变种LSTM\[5\]组成。图中的向量thought vector编码了输入文本信息（Are you free tomorrow?），解码器获得这个向量依次解码生成目标文本（Yes, what's up?）。上述模型也可以自然地用于自动文本摘要任务，这时的输入为原文本（如新闻），输出为摘要（如新闻标题）。
+
+Seq2Seq同样也可以通过CNN实现。不同于递归神经网络可以直观地应用到时序数据，CNN最初只被用于图像任务\[6\]。
+
+![Image](/img/cnn.png?raw=true)
+
+CNN通过卷积核（上图的A和B）从图像中提取特征（features），间隔地对特征作用max pooling，得到不同阶层、从简单到复杂的特征，如线、面、复杂图形模式等，如下图所示。
+
+![Image](/img/cnn_image.png?raw=true)
+
+CNN的优势是能提取出hierarchical的特征，并且能并行高效地进行卷积操作，是否能将CNN应用到文本任务中呢？原生的字符串文本并不能提供这种可能性，然而，一旦将文本表现成分布式向量（distributed representation/word embedding）\[7\]，我们就可以用一个实数矩阵/向量表示一句话/一个词。这样的分布式向量使我们能够在文本任务中应用CNN。
+
+![Image](/img/cnn_text.png?raw=true)
+
+如上图所示，原文本（wait for the video and do n't rent it）由一个实数矩阵表示，这个矩阵可以类比成一张图像的像素矩阵，CNN可以像“阅读”图像一样“阅读”文本，学习并提取特征。虽然CNN提取的文本特征并不像图像特征有显然的可解释性并能够被可视化，CNN抽取的文本特征可以类比自然语言处理中的分析树（syntactic parsing tree），代表一句话的语法层级结构。
+
+![Image](/img/parsing_tree.gif?raw=true)
 
 
-图中展示的是一个用于自动回复邮件的模型，它的编码器和解码器分别由四层RNN的变种LSTM组成。
-
-
-
-
-
-Seq2Seq模型
-
-RNN
-
-CNN
 
 ConvS2S
 
@@ -109,3 +117,9 @@ Reference
 \[3\] [Introduction to the Special Issue on Summarization](http://www.mitpressjournals.org/doi/abs/10.1162/089120102762671927)
 
 \[4\] [A Deep Reinforced Model for Abstractive Summarization](https://arxiv.org/abs/1705.04304)
+
+\[5\] [Understanding LSTM Networks](http://colah.github.io/posts/2015-08-Understanding-LSTMs/)
+
+\[6\] [LeNet5, convolutional neural networks](http://yann.lecun.com/exdb/lenet/)
+
+\[7\] [What is word embedding in deep learning](https://www.quora.com/What-is-word-embedding-in-deep-learning)
