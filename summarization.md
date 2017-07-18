@@ -20,7 +20,7 @@ TODO
 
 摘要式文本摘要
 ---
-摘要式文本摘要以一种更接近于人的方式生成摘要，这就要求摘要式模型有更强的**表征**、**理解**、**生成**文本的能力。传统方法很难实现这些能力，而近几年来快速发展的深度神经网络因其强大的表征（representation）能力，提供了更多的可能性，在图像分类、机器翻译等领域不断推进机器智能的极限。借助深度神经网络，摘要式自动文本摘要也有了令人瞩目的发展，不少摘要式神经网络模型（neural-network-based abstractive summarization model）在DUC-2004测试集上已经超越了最好的抽取式模型\[4\]。这部分文章主要介绍摘要式神经网络模型的基本结构、及最新成果。
+摘要式文本摘要以一种更接近于人的方式生成摘要，这就要求摘要式模型有更强的**表征**、**理解**、**生成**文本的能力。传统方法很难实现这些能力，而近几年来快速发展的深度神经网络因其强大的表征（representation）能力，提供了更多的可能性，在图像分类、机器翻译等领域不断推进机器智能的极限。借助深度神经网络，摘要式自动文本摘要也有了令人瞩目的发展，不少摘要式神经网络模型（neural-network-based abstractive summarization model）在DUC-2004测试集上已经超越了最好的抽取式模型\[4\]。这部分文章主要介绍摘要式神经网络模型的基本结构及最新成果。
 
 #### 基本模型结构
 
@@ -31,6 +31,8 @@ TODO
 编码器负责将输入的原文本编码成一个向量（context），该向量是原文本的一个表征，包含了文本信息。而解码器负责从这个向量提取重要信息、加工剪辑，生成文本摘要。这套架构被称作Sequence-to-Sequence（以下简称Seq2Seq），被广泛应用于存在输入序列和输出序列的场景，比如机器翻译（一种语言序列到另一种语言序列）、image captioning（图片像素序列到语言序列）、对话机器人（如问题到回答）等。
 
 Seq2Seq架构中的编码器和解码器通常由递归神经网络（RNN）或卷积神经网络（CNN）实现。
+
+##### 基于递归神经网络的模型
 
 RNN被称为递归神经网络，是因为它的输出不仅依赖于输入，还依赖上一时刻输出。
 
@@ -43,6 +45,10 @@ RNN被称为递归神经网络，是因为它的输出不仅依赖于输入，�
 ![Image](/img/seq2seq_rnn.png?raw=true)
 
 图中展示的是一个用于自动回复邮件的模型，它的编码器和解码器分别由四层RNN的变种LSTM\[5\]组成。图中的向量thought vector编码了输入文本信息（Are you free tomorrow?），解码器获得这个向量依次解码生成目标文本（Yes, what's up?）。上述模型也可以自然地用于自动文本摘要任务，这时的输入为原文本（如新闻），输出为摘要（如新闻标题）。
+
+目前最好的基于RNN的Seq2Seq模型来自Salesforce，在基本的模型架构上，使用了注意力机制（attention mechanism）和强化学习（reinforcement learning）。这个模型将在下文中详细介绍。
+
+##### 基于卷积神经网络的模型
 
 Seq2Seq同样也可以通过CNN实现。不同于递归神经网络可以直观地应用到时序数据，CNN最初只被用于图像任务\[6\]。
 
@@ -60,9 +66,15 @@ CNN的优势是能提取出hierarchical的特征，并且能并行高效地进�
 
 ![Image](/img/parsing_tree.gif?raw=true)
 
+基于卷积神经网络的自动文本摘要模型中最具代表性的是由Facebook提出的ConvS2S模型\[9\]，它的编码器和解码器都由CNN实现，同时也加入了注意力机制，下文将详细介绍。
 
+当然，我们不仅可以用同一种神经网络实现编码器和解码器，也可以用不同的网络，如编码器基于CNN，解码器基于RNN。
 
-ConvS2S
+#### 最新成果
+
+#####  A Deep Reinforced Model for Abstractive Summarization
+
+#####  Convolutional Sequence to Sequence Learning
 
 
 
@@ -123,3 +135,7 @@ Reference
 \[6\] [LeNet5, convolutional neural networks](http://yann.lecun.com/exdb/lenet/)
 
 \[7\] [What is word embedding in deep learning](https://www.quora.com/What-is-word-embedding-in-deep-learning)
+
+\[8\] [A Deep Reinforced Model for Abstractive Summarization](https://www.salesforce.com/products/einstein/ai-research/tl-dr-reinforced-model-abstractive-summarization/)
+
+\[9\] [Convolutional Sequence to Sequence Learning](https://arxiv.org/abs/1705.03122)
