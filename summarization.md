@@ -1,8 +1,8 @@
-自动文本摘要调研
+当深度学习遇见自动文本摘要
 ===
 介绍
 ---
-随着近几年文本信息的爆发式增长，人们每天能接触到海量的文本信息，如新闻、博客、聊天、报告、论文、微博等。从大量文本信息中提取重要的内容，成为了一个迫切的需求，而自动文本摘要（automatic text summarization）则提供了一个高效的解决方案。
+随着近几年文本信息的爆发式增长，人们每天能接触到海量的文本信息，如新闻、博客、聊天、报告、论文、微博等。从大量文本信息中提取重要的内容，已成为我们的一个迫切需求，而自动文本摘要（automatic text summarization）则提供了一个高效的解决方案。
 
 根据Radev的定义\[3\]，摘要是“一段从一份或多份文本中提取出来的文字，它包含了原文本中的重要信息，其长度不超过或远少于原文本的一半”。自动文本摘要旨在通过机器**自动输出**简洁、流畅、保留关键信息的摘要。
 
@@ -24,7 +24,7 @@
 
 ![Image](/img/seq2seq.png?raw=true)
 
-编码器负责将输入的原文本编码成一个向量（context），该向量是原文本的一个表征，包含了文本信息。而解码器负责从这个向量提取重要信息、加工剪辑，生成文本摘要。这套架构被称作Sequence-to-Sequence（以下简称Seq2Seq），被广泛应用于存在输入序列和输出序列的场景，比如机器翻译（一种语言序列到另一种语言序列）、image captioning（图片像素序列到语言序列）、对话机器人（如问题到回答）等。
+编码器负责将输入的原文本编码成一个向量（context），该向量是原文本的一个表征，包含了文本背景。而解码器负责从这个向量提取重要信息、加工剪辑，生成文本摘要。这套架构被称作Sequence-to-Sequence（以下简称Seq2Seq），被广泛应用于存在输入序列和输出序列的场景，比如机器翻译（一种语言序列到另一种语言序列）、image captioning（图片像素序列到语言序列）、对话机器人（如问题到回答）等。
 
 Seq2Seq架构中的编码器和解码器通常由递归神经网络（RNN）或卷积神经网络（CNN）实现。
 
@@ -42,7 +42,7 @@ RNN被称为递归神经网络，是因为它的输出不仅依赖于输入，�
 
 图中展示的是一个用于自动回复邮件的模型，它的编码器和解码器分别由四层RNN的变种LSTM\[5\]组成。图中的向量thought vector编码了输入文本信息（Are you free tomorrow?），解码器获得这个向量依次解码生成目标文本（Yes, what's up?）。上述模型也可以自然地用于自动文本摘要任务，这时的输入为原文本（如新闻），输出为摘要（如新闻标题）。
 
-目前最好的基于RNN的Seq2Seq模型来自Salesforce，在基本的模型架构上，使用了注意力机制（attention mechanism）和强化学习（reinforcement learning）。这个模型将在下文中详细介绍。
+目前最好的基于RNN的Seq2Seq生成式文本摘要模型之一来自Salesforce，在基本的模型架构上，使用了注意力机制（attention mechanism）和强化学习（reinforcement learning）。这个模型将在下文中详细介绍。
 
 ##### 基于卷积神经网络的模型
 
@@ -50,11 +50,11 @@ Seq2Seq同样也可以通过CNN实现。不同于递归神经网络可以直观�
 
 ![Image](/img/cnn.png?raw=true)
 
-CNN通过卷积核（上图的A和B）从图像中提取特征（features），间隔地对特征作用max pooling，得到不同阶层、从简单到复杂的特征，如线、面、复杂图形模式等，如下图所示。
+CNN通过卷积核（上图的A和B）从图像中提取特征（features），间隔地对特征作用max pooling，得到不同阶层的、由简单到复杂的特征，如线、面、复杂图形模式等，如下图所示。
 
 ![Image](/img/cnn_image.png?raw=true)
 
-CNN的优势是能提取出hierarchical的特征，并且能并行高效地进行卷积操作，是否能将CNN应用到文本任务中呢？原生的字符串文本并不能提供这种可能性，然而，一旦将文本表现成分布式向量（distributed representation/word embedding）\[7\]，我们就可以用一个实数矩阵/向量表示一句话/一个词。这样的分布式向量使我们能够在文本任务中应用CNN。
+CNN的优势是能提取出hierarchical的特征，并且能并行高效地进行卷积操作，那么是否能将CNN应用到文本任务中呢？原生的字符串文本并不能提供这种可能性，然而，一旦将文本表现成分布式向量（distributed representation/word embedding）\[7\]，我们就可以用一个实数矩阵/向量表示一句话/一个词。这样的分布式向量使我们能够在文本任务中应用CNN。
 
 ![Image](/img/cnn_text.png?raw=true)
 
@@ -84,9 +84,9 @@ CNN的优势是能提取出hierarchical的特征，并且能并行高效地进�
 
 ![teacher_forcing](/img/teacher_forcing.png?raw=true)
 
-但对于文本摘要，仅仅考虑最大似然并不够。主要有两个原因，一是监督式训练有参考“答案”，但投入应用、生成摘要时却没有。比如t时刻生成的词是"tech"，而参考摘要中是"science"，那么在训练中生成t+1时刻的词时，输入是"science"，错误并没有积累。但在实际应用中，t+1时刻的输入是错误的"tech"。这样引起的后果是因为没有纠正，错误会积累，这个问题被称为*exposure bias*。另一个原因是，往往在监督式训练中，我们只提供一个参考摘要，基于MLE的监督式训练鼓励模型生成一模一样的摘要，然而正如在介绍中提到的，对于一篇文本，往往可以有不同的摘要，因此监督式学习的要求太过绝对。与此相反，用于评价生成摘要的ROUGE指标却能考虑进这一灵活性，通过比较参考摘要和生成的摘要，给出摘要的评价（见下文评估摘要部分）。所以希望在训练时引入ROUGE指标。但由于ROUGE并不可导的，传统的求梯度+backpropagation并不能应用到ROUGE。因此，一个很自然的想法是，利用强化学习将ROUGE指标加入训练目标，如下图所示。
+但对于文本摘要，仅仅考虑最大似然并不够。主要有两个原因，一是监督式训练有参考“答案”，但投入应用、生成摘要时却没有。比如t时刻生成的词是"tech"，而参考摘要中是"science"，那么在训练中生成t+1时刻的词时，输入是"science"，错误并没有积累。但在实际应用中，t+1时刻的输入是错误的"tech"。这样引起的后果是因为没有纠正，错误会积累，这个问题被称为*exposure bias*。另一个原因是，往往在监督式训练中，我们只提供一个参考摘要，基于MLE的监督式训练鼓励模型生成一模一样的摘要，然而正如在介绍中提到的，对于一篇文本，往往可以有不同的摘要，因此监督式学习的要求太过绝对。与此相反，用于评价生成摘要的ROUGE指标却能考虑进这一灵活性，通过比较参考摘要和生成的摘要，给出摘要的评价（见下文评估摘要部分）。所以希望在训练时引入ROUGE指标。但由于ROUGE并不可导的，传统的求梯度+backpropagation并不能应用到ROUGE。因此，一个很自然的想法是，利用强化学习将ROUGE指标加入训练目标。
 
-那么我们是怎么通过强化学习是模型针对ROUGE进行优化呢？简单说来，在训练中，模型以inference模式生成摘要样本，用ROUGE指标测评打分，得到了对这个样本的评价/回报（reward），然后根据回报更新模型参数：如果模型生成的样本reward较高，那么鼓励模型；如果生成的样本评价较低，那么抑制模型输出此类样本。
+那么我们是怎么通过强化学习使模型针对ROUGE进行优化呢？简单说来，模型先以前向模式（inference）生成摘要样本，用ROUGE指标测评打分，得到了对这个样本的评价/回报（reward）后，再根据回报更新模型参数：如果模型生成的样本reward较高，那么鼓励模型；如果生成的样本评价较低，那么抑制模型输出此类样本。
 
 ![rl](/img/rl.png?raw=true)
 
@@ -102,7 +102,7 @@ CNN的优势是能提取出hierarchical的特征，并且能并行高效地进�
 
 #####  Convolutional Sequence to Sequence Learning
 
-这个Seq2Seq模型由Facebook的AI实验室提出，它的编码器和解码器都是基于卷积神经网络搭建的。这个模型主要用于机器翻译任务，在论文发表的时候，在英-德、英-法两个翻译任务上达到了state-of-the-art。同时，作者也尝试将该模型用于自动文本摘要，实验结果显示，基于CNN的Seq2Seq模型也能在文本摘要任务中达到接近state-of-the-art的表现。
+ConvS2S模型由Facebook的AI实验室提出，它的编码器和解码器都是基于卷积神经网络搭建的。这个模型主要用于机器翻译任务，在论文发表的时候，在英-德、英-法两个翻译任务上都达到了state-of-the-art。同时，作者也尝试将该模型用于自动文本摘要，实验结果显示，基于CNN的Seq2Seq模型也能在文本摘要任务中达到接近state-of-the-art的表现。
 
 模型架构如下图所示。乍看之下，模型很复杂，但实际上，它的每个部分都比较直观，下面通过分解成子模块，详细介绍ConvS2S。
 
@@ -112,7 +112,7 @@ CNN的优势是能提取出hierarchical的特征，并且能并行高效地进�
 
 ![embedding](/img/embedding.png?raw=true)
 
-这个模型的embedding比较新颖，除了传统的semantic embedding/word embedding，还加入了position embedding，将词序表示成分布式向量，使模型获得词序和位置信息，模拟RNN对词序的感知。最后的embedding是语义和词序embedding的简单和。
+这个模型的embedding比较新颖，除了传统的semantic embedding/word embedding，还加入了position embedding，将词序表示成分布式向量，使模型获得词序和位置信息，模拟RNN对词序的感知。最后的embedding是语义和词序embedding的简单求和。
 
 之后，词语的embedding作为输入进入到模型的卷积模块。
 
@@ -128,7 +128,17 @@ CNN的优势是能提取出hierarchical的特征，并且能并行高效地进�
 
 ![glu](/img/glu_math.png?raw=true)
 
-了解LSTM的同学可能会联想到LSTM中的门结构。GLU从某种程度上说，是在模仿LSTM和GRU中的门结构，使网络有能力控制信息流的传递，GLU在language modeling被证明是非常有效的\[10\]。
+这个设计让人联想到LSTM中的门结构。GLU从某种程度上说，是在模仿LSTM和GRU中的门结构，使网络有能力控制信息流的传递，GLU在language modeling被证明是非常有效的\[10\]。
+
+除了将门架构和卷积层结合，作者还使用了残余连接（residual connection）\[11\]。residual connection能帮助构建更深的网络，缓解梯度消失/爆炸等问题。
+
+除了使用加强版的卷积网络，模型还引入了带多跳结构的注意力机制（multi-step attention）。不同于以往的注意力机制，多跳式注意力不仅要求解码器的最后一层卷积块关注输入和输出信息，而且还要求每一层卷积块都执行同样的注意力机制。如此复杂的注意力机制使模型能获得更多的历史信息，如哪些输入已经被关注过。
+
+![glu](/img/attention.png?raw=true)
+
+像A Deep Reinforced Model for Abstractive Summarization一样，ConvS2S的成功之处不仅在于创新的结构，还在于细致入微的小技巧。在ConvS2S中，作者对参数使用了非常仔细的初始化和规范化（normalization），稳定了方差和训练过程。
+
+这个模型的成功证明了CNN同样能应用到文本任务中，通过层级表征长程依赖（long-range dependency）。同时，由于CNN具有可高度并行化的特点，所以CNN的训练比RNN更高效。比起RNN，CNN的不足是有更多的参数需要调节。
 
 
 
@@ -165,11 +175,7 @@ CNN的优势是能提取出hierarchical的特征，并且能并行高效地进�
 
 ## 总结
 
-抽取+摘要
-
-更好的指标
-
-可读性更强
+本文主要介绍了基于深度神经网络的生成式文本摘要，包括基本模型和最新进展，同时也介绍了如何评价自动生成的摘要。自动文本摘要是目前NLP的热门研究方向之一，从研究落地到实际业务，还有一段路要走，未来可能的发展方向有：1）模仿人撰写摘要的模式，融合抽取式和生成式模型；2）研究更好的摘要评估指标。希望本文能帮助大家更好地了解深度神经网络在自动文本摘要任务中的应用。
 
 
 
@@ -194,3 +200,5 @@ Reference
 \[9\] [Convolutional Sequence to Sequence Learning](https://arxiv.org/abs/1705.03122)
 
 \[10\] [Language Modeling with Gated Convolutional Networks](https://arxiv.org/abs/1612.08083)
+
+\[11\] [Deep Residual Learning for Image Recognition](https://arxiv.org/abs/1512.03385)
