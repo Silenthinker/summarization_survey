@@ -70,7 +70,7 @@ CNN的优势是能提取出hierarchical的特征，并且能并行高效地进�
 
 #####  A Deep Reinforced Model for Abstractive Summarization
 
-这是由Salesforce研究发表的基于RNN的生成式自动文本摘要模型，通过架构创新和若干tricks提升模型概括长文本的能力。
+这是由Salesforce研究发表的基于RNN的生成式自动文本摘要模型，通过架构创新和若干tricks提升模型概括长文本的能力，在CNN/Daily Mail、New York Times数据集上达到了新的state-of-the-art。
 
 针对长文本生成摘要在文本摘要领域是一项比较困难的任务，即使是过去最好的深度神经网络模型，在处理这项任务时，也会出现生成不通顺、重复词句等问题。为了解决上述问题，模型作者提出了**内注意力机制**（intra-attention mechanism）和**新的训练方法**，有效地提升了文本摘要的生成质量。
 
@@ -102,12 +102,39 @@ CNN的优势是能提取出hierarchical的特征，并且能并行高效地进�
 
 #####  Convolutional Sequence to Sequence Learning
 
+这个Seq2Seq模型由Facebook的AI实验室提出，它的编码器和解码器都是基于卷积神经网络搭建的。这个模型主要用于机器翻译任务，在论文发表的时候，在英-德、英-法两个翻译任务上达到了state-of-the-art。同时，作者也尝试将该模型用于自动文本摘要，实验结果显示，基于CNN的Seq2Seq模型也能在文本摘要任务中达到接近state-of-the-art的表现。
+
+模型架构如下图所示。乍看之下，模型很复杂，但实际上，它的每个部分都比较直观，下面通过分解成子模块，详细介绍ConvS2S。
+
 ![convs2s](/img/convs2s.png?raw=true)
+
+首先来看embedding部分。
+
+![embedding](/img/embedding.png?raw=true)
+
+这个模型的embedding比较新颖，除了传统的semantic embedding/word embedding，还加入了position embedding，将词序表示成分布式向量，使模型获得词序和位置信息，模拟RNN对词序的感知。最后的embedding是语义和词序embedding的简单和。
+
+之后，词语的embedding作为输入进入到模型的卷积模块。
+
+![conv_block](/img/conv_block.png?raw=true)
+
+这个卷积模块可以视作是经典的卷积加上非线性变换。虽然图中只画出一层的情况，实际上可以像经典的卷积层一样，层层叠加。
+
+这里着重介绍非线性变换。
+
+![glu](/img/glu.png?raw=true)
+
+该非线性变换被称为*Gated Linear Unit (GLU)*\[10\]。它将卷积后的结果分成两部分，对其中一部分作用sigmoid变换，即映射到0到1的区间之后，和另一部分向量进行element-wise乘积。
+
+![glu](/img/glu_math.png?raw=true)
+
+了解LSTM的同学可能会联想到LSTM中的门结构。GLU从某种程度上说，是在模仿LSTM和GRU中的门结构，使网络有能力控制信息流的传递，GLU在language modeling被证明是非常有效的\[10\]。
 
 
 
 评估摘要
 ---
+
 评估一篇摘要的质量是一件比较困难的任务。
 
 对于一篇摘要而言，很难说有标准答案。不同于很多拥有客观评判标准的任务，摘要的评判一定程度上依赖主观判断。即使在摘要任务中，有关于语法正确性、语言流畅性、关键信息完整度等标准，摘要的评价还是如同”一千个人眼里有一千个哈姆雷特“一样，每个人对摘要的优劣都有自己的准绳。
@@ -165,3 +192,5 @@ Reference
 \[8\] [A Deep Reinforced Model for Abstractive Summarization](https://www.salesforce.com/products/einstein/ai-research/tl-dr-reinforced-model-abstractive-summarization/)
 
 \[9\] [Convolutional Sequence to Sequence Learning](https://arxiv.org/abs/1705.03122)
+
+\[10\] [Language Modeling with Gated Convolutional Networks](https://arxiv.org/abs/1612.08083)
